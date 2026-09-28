@@ -40,6 +40,14 @@ import aiDoctorRouter from './modules/ai-doctor/ai-doctor.router';
 import { startVitalsSimulator } from './jobs/vitalsSimulator';
 
 const app = express();
+
+// Render (and Vercel/most PaaS hosts) sit the app behind one reverse proxy
+// hop. Without this, Express ignores X-Forwarded-For and req.ip resolves to
+// that proxy's own address for every request — so every visitor shares one
+// rate-limit bucket instead of getting their own, and the global limiter
+// below empties in minutes under real traffic. `1` trusts exactly one hop.
+app.set('trust proxy', 1);
+
 const server = http.createServer(app);
 
 // ─── Socket.IO ─────────────────────────────────────
